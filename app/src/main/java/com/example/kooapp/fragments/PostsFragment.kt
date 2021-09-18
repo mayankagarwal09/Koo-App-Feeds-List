@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.kooapp.adapters.PostAdapter
+import com.example.kooapp.adapters.PostLoadStateAdapter
 import com.example.kooapp.databinding.FragmentPostsBinding
 import com.example.kooapp.repositories.PostRepository
 import com.example.kooapp.viewModels.PostViewModel
@@ -30,7 +31,10 @@ class PostsFragment : Fragment() {
         binding = FragmentPostsBinding.inflate(layoutInflater, container, false)
 
         val postAdapter = PostAdapter()
-        binding.postList.adapter = postAdapter
+        binding.postList.adapter = postAdapter.withLoadStateHeaderAndFooter(
+            header = PostLoadStateAdapter { postAdapter.retry() },
+            footer = PostLoadStateAdapter { postAdapter.retry() }
+        )
 
         viewLifecycleOwner.lifecycleScope.launch {
             postViewModel.getPosts().collectLatest {

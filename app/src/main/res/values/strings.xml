@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">KooApp</string>
     <string name="app_title">Koo App</string>
+    <string name="retry">Retry</string>
 </resources>
