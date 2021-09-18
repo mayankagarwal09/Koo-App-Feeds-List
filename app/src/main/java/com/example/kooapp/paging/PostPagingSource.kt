@@ -7,37 +7,29 @@ import com.example.kooapp.models.Post
 import retrofit2.HttpException
 import java.io.IOException
 
-class PostPagingSource : PagingSource<Int, Post>() {
-    override fun getRefreshKey(state: PagingState<Int, Post>): Int? {
+class PostPagingSource : PagingSource<String, Post>() {
 
-        return state.anchorPosition?.let { anchorPosition ->
-            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
-                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
-        }
-    }
+    override suspend fun load(params: LoadParams<String>): LoadResult<String, Post> {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Post> {
-        val pageIndex = params.key ?: 1
         return try {
-            val response = PostApi.retrofitService.getPostsFromPage(pageIndex)
+            val pageUrl = params.key
+            val response =
+                if (pageUrl != null) PostApi.retrofitService.getPostsFromLink(pageUrl) else PostApi.retrofitService.getPosts()
             val posts = response.data
-            val nextKey =
-                if (posts.isEmpty()) {
-                    null
-                } else {
-                    // By default, initial load size = 3 * NETWORK PAGE SIZE
-                    // ensure we're not requesting duplicating items at the 2nd request
-                    pageIndex + (params.loadSize / response.meta.pagination.limit)
-                }
             LoadResult.Page(
                 data = posts,
-                prevKey = if (pageIndex == 1) null else pageIndex,
-                nextKey = nextKey
+                prevKey = response.meta.pagination.links.previous,
+                nextKey = response.meta.pagination.links.next
             )
         } catch (exception: IOException) {
             return LoadResult.Error(exception)
         } catch (exception: HttpException) {
             return LoadResult.Error(exception)
         }
+    }
+
+    override fun getRefreshKey(state: PagingState<String, Post>): String? {
+        return state.anchorPosition?.let { state.closestItemToPosition(it)?.id?.toString() }
+
     }
 }
