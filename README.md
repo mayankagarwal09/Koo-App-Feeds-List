@@ -1,5 +1,5 @@
-# Koo-App-Feeds-List
-An assignment for Koo App Recruitment process
+# App-Feeds-List
+A sample android app showing use of Paging3 library to load data from a paginated API 
 
 ## About
 The App Loads list of feeds from a paginated API and shows in a recyclerView using Paging3 library.
